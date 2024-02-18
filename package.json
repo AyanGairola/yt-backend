@@ -1,0 +1,11 @@
+{
+  "name": "yt-backend",
+  "version": "1.0.0",
+  "description": "backend practice project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ayan Gairola",
+  "license": "ISC"
+}
