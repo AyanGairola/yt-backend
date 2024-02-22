@@ -11,7 +11,6 @@ app.use(cors({
 }))
 
 app.use(express.json({limit:"15kb"}))
-app.use(express.urlencoded)
 app.use(express.static("public"))
 app.use(cookieParser())
 
@@ -22,5 +21,6 @@ import userRouter from './routes/user.routes.js'
 
 //routes declare
 app.use("/api/v1/users",userRouter)
+
 
 export default app;

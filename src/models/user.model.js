@@ -35,7 +35,7 @@ const userSchema=new mongoose.Schema({
     },
     avatar:{
         type:String,
-        required:true
+        required:true,
     },
     coverImage:{
         type:String,
@@ -49,7 +49,7 @@ const userSchema=new mongoose.Schema({
 
 userSchema.pre("save", async function(next){
     if(this.isModified("password")){
-        this.password=bcrypt.hash(this.password,10)
+        this.password=await bcrypt.hash(this.password,10)
         next()
     }
     else{
