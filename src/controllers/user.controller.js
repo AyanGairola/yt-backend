@@ -308,7 +308,7 @@ const updateAccountDetails=asyncHandler(async(req,res)=>{
         throw new ApiError(400,"Email or FullName is needed")
     }
 
-    const user= await User.findByIdAndDelete(
+    const user= await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set:{
