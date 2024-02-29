@@ -142,14 +142,19 @@ const updateVideoDetails = asyncHandler(async (req, res) => {
 
     //only the owner can update the video details
     const video = await Video.findById(videoId)
+
+    if(!video){
+        throw new ApiError(400,"Cant find video")
+    }
+
     const user= await User.findById(req.user?._id)
+    if(!user){
+        throw new ApiError(400,"Cant find User")
+    }
+
 
     if (video?.owner.equals(user)) {
-        const video=await Video.findById(videoId)
-        if(!video){
-            throw new ApiError(400,"Cant find video")
-        }
-    
+        
         //updating title and description
         const {title,description}=req.body
         if (!title) {
@@ -171,16 +176,16 @@ const updateVideoDetails = asyncHandler(async (req, res) => {
             throw new ApiError(400,"Thumbnail is not uploaded")
         }
     
-        const newThumbnail=await uploadOnCloudinary(newThumbnailLocalFilePath)
+        const thumbnail=await uploadOnCloudinary(newThumbnailLocalFilePath)
     
-        if(!newThumbnail){
+        if(!thumbnail){
             throw new ApiError(400,"new Thumbnail not uploaded on cloudinary")
         }
     
-        video.thumbnail=newThumbnail.url
+        video.thumbnail=thumbnail.url
         
         //saving the changes
-        await video.save({ validateBeforeSave: false })
+        await video.save()
     
         //returning the response
         return(
@@ -190,7 +195,7 @@ const updateVideoDetails = asyncHandler(async (req, res) => {
         )
     }
     else{
-        throw new ApiError(400,"Video details cant be updated")
+        throw new ApiError(400,"Only the owner can update video details")
     }
 
 })
@@ -209,13 +214,16 @@ const deleteVideo = asyncHandler(async (req, res) => {
     //only the owner can delete the video
     if (video?.owner.equals(user)) {
         await Video.findByIdAndDelete(videoId)
+        return(
+            res
+            .status(200)
+            .json(new ApiResponse(200,{},"Video deleted successfully"))
+        )
+    }else{
+        throw new ApiError(401,"Only user can delete the video")
     }
 
-    return(
-        res
-        .status(200)
-        .json(new ApiResponse(200,{},"Video deleted successfully"))
-    )
+    
 })
 
 
