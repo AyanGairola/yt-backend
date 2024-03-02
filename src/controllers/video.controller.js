@@ -73,41 +73,74 @@ const publishVideo=asyncHandler(async(req,res)=>{
 })
 
 
-const getAllVideos=asyncHandler(async(req,res)=>{
-    /*
-    1-extract query parameters
-    2-construct the query
-    3-execute the query
-    4- return the response
-    */
+const getAllVideos = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
 
-    //extracting query parameters
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+    const pageNumber = parseInt(page);
+    const limitOfComments = parseInt(limit);
 
-    //constructing mongodb query
-    const conditions = {};
-    if (query) {
-        conditions.title = { $regex: query, $options: 'i' }; // Case-insensitive search
-    }
-    if (userId) {
-        conditions.userId = userId;
+    if (!userId) {
+        throw new ApiError(400, "User Id is required.");
     }
 
-    const sortOptions = {};
-    if (sortBy) {
-        sortOptions[sortBy] = sortType === 'desc' ? -1 : 1;
-    }
-    
+    const skip = (pageNumber - 1) * limitOfComments;
+    const pageSize = limitOfComments;
 
-    // Execute the query
-    const videos = await Video.find(conditions)
-    .sort(sortOptions)
-    .skip((page - 1) * limit)
-    .limit(parseInt(limit));
+    const videos = await Video.aggregatePaginate(
+        Video.aggregate([
+            { 
+                $match: {
+                    $or: [
+                        { title: { $regex: query, $options: 'i' } },
+                        { description: { $regex: query, $options: 'i' } }
+                    ],
+                    isPublished: true,
+                    owner: mongoose.Types.ObjectId(userId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "likes",
+                    localField: "_id",
+                    foreignField: "video",
+                    as: "likes",
+                }
+            },
+            {
+                $addFields: {
+                    likes: { $size: "$likes" }
+                }
+            },
+            {
+                $project: {
+                    "_id": 1,
+                    "videoFile": 1,
+                    "thumbnail": 1,
+                    "title": 1,
+                    "description": 1,
+                    "duration": 1,
+                    "views": 1,
+                    "isPublished": 1,
+                    "owner": 1,
+                    "createdAt": 1,
+                    "updatedAt": 1,
+                    "likes": 1
+                }
+            },
+            { $sort: { [sortBy]: sortType === 'asc' ? 1 : -1 } },
+            { $skip: skip },
+            { $limit: pageSize }
+        ])
+    );
+
+    if (videos.length === 0) {
+        return res.status(200).json(new ApiResponse(200, "No videos available."));
+    }
 
     // Return the videos
-    res.status(200).json(new ApiResponse(200,videos,"videos fetched successfully"));
-})
+    res.status(200).json(new ApiResponse(200, videos, "Videos fetched successfully"));
+});
+
 
 
 const getVideoById=asyncHandler(async(req,res)=>{
