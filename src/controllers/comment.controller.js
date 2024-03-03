@@ -30,7 +30,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
         Comment.aggregate([
             { 
                 $match: { 
-                    video: mongoose.Types.ObjectId(videoId) 
+                    video: video._id 
                 } 
             },
             {
@@ -103,7 +103,12 @@ const addComment = asyncHandler(async (req, res) => {
         throw new ApiError(400,"Content is required")
     }
 
-    const user=await User.findById(req.user?._id)
+    const user = await User.findOne({
+        refreshToken: req.cookies.refreshToken,
+    })
+    if (!user) {
+        throw new ApiError(404, "User not found")
+    }
     const video=await Video.findById(videoId)
 
     if(!video){
@@ -117,7 +122,7 @@ const addComment = asyncHandler(async (req, res) => {
         video:video._id
     })
 
-    if(!createComment){
+    if(!comment){
         throw new ApiError(500, "Error in creating the comment")
     }
 
@@ -140,12 +145,14 @@ const updateComment = asyncHandler(async(req,res)=>{
 
     const comment=await Comment.findById(commentId)
     //validating if the user is the one updating the comment
-    const user= await User.findById(req.user?._id)
-    if(!user){
-        throw new ApiError(400,"Cant find User")
+    const user = await User.findOne({
+        refreshToken: req.cookies.refreshToken,
+    })
+    if (!user) {
+        throw new ApiError(404, "User not found")
     }
     
-    if(comment?.owner.equals(user)){
+    if(comment?.owner.equals(user._id.toString())){
         const {content}=req.body
         if (!content) {
             throw new ApiError(400,"Content is required")
@@ -177,14 +184,16 @@ const deleteComment = asyncHandler(async (req, res) => {
         return res.status(404).json(new ApiResponse(404, {}, "Comment not found"));
     }
 
-    const user=await User.findById(req.user?._id)
-    if(!user){
-        throw new ApiError(400,"Cant find the user")
+    const user = await User.findOne({
+        refreshToken: req.cookies.refreshToken,
+    })
+    if (!user) {
+        throw new ApiError(404, "User not found")
     }
 
 
     //only the owner can delete the tweet
-    if (comment?.owner.equals(user)) {
+    if (comment?.owner.equals(user._id.toString())) {
         await Comment.findByIdAndDelete(commentId)
         return(
             res
