@@ -23,9 +23,11 @@ const createPlaylist=asyncHandler(async(req,res)=>{
         throw new ApiError(400,"description for playlist is required")
     }
 
-    const user=await User.findById(req.user?._id)
-    if(!user){
-        throw new ApiError(400,"Could not find user")
+    const user = await User.findOne({
+        refreshToken: req.cookies.refreshToken,
+    })
+    if (!user) {
+        throw new ApiError(404, "User not found")
     }
 
     //uploading on mongo
@@ -73,7 +75,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     return(
         res
         .status(200)
-        .json(new ApiResponse(200,playlist,"Playlist fetched successfully"))
+        .json(new ApiResponse(200,playlist,"Playlists fetched successfully"))
     )
 })
 
