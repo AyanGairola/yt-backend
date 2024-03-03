@@ -4,13 +4,16 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 import { Video } from "../models/video.model.js"
 import {Tweet} from "../models/tweet.model.js"
+import { User } from "../models/user.model.js"
+import { Comment } from "../models/comment.model.js"
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
-    const user = req.user;
-
+    const user = await User.findOne({
+        refreshToken: req.cookies.refreshToken,
+    })
     if (!user) {
-        throw new ApiError(401, "Unauthorized");
+        throw new ApiError(404, "User not found")
     }
 
     // Check if the video exists
@@ -42,10 +45,11 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
 
 const toggleCommentLike = asyncHandler(async (req, res) => {
     const { commentId } = req.params;
-    const user = req.user;
-
+    const user = await User.findOne({
+        refreshToken: req.cookies.refreshToken,
+    })
     if (!user) {
-        throw new ApiError(401, "Unauthorized");
+        throw new ApiError(404, "User not found")
     }
 
     // Check if the comment exists
@@ -79,10 +83,11 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
     const {tweetId} = req.params
-    const user = req.user;
-
+    const user = await User.findOne({
+        refreshToken: req.cookies.refreshToken,
+    })
     if (!user) {
-        throw new ApiError(401, "Unauthorized");
+        throw new ApiError(404, "User not found")
     }
 
     // Check if the tweet exists
@@ -115,10 +120,11 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 
 
 const getLikedVideos = asyncHandler(async (req, res) => {
-    const user = req.user;
-
+    const user = await User.findOne({
+        refreshToken: req.cookies.refreshToken,
+    })
     if (!user) {
-        throw new ApiError(401, "Unauthorized");
+        throw new ApiError(404, "User not found")
     }
 
     // Find all likes by the user
