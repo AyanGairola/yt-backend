@@ -72,12 +72,14 @@ const updateTweet = asyncHandler(async (req, res) => {
     }
 
 
-    const user= await User.findById(req.user?._id)
-    if(!user){
-        throw new ApiError(400,"Cant find User")
+    const user = await User.findOne({
+        refreshToken: req.cookies.refreshToken,
+    })
+    if (!user) {
+        throw new ApiError(404, "User not found")
     }
 
-    if (tweet?.owner.equals(user)) {
+    if (tweet?.owner.equals(user._id.toString())) {
 
         const {content}=req.body
 
@@ -105,14 +107,16 @@ const deleteTweet = asyncHandler(async (req, res) => {
         throw new ApiError(400,"Tweet id cant be fetched for params")
     }
     const tweet= await Tweet.findById(tweetId)
-    const user=await User.findById(req.user?._id)
-    if(!user){
-        throw new ApiError(400,"Cant find the user")
+    const user = await User.findOne({
+        refreshToken: req.cookies.refreshToken,
+    })
+    if (!user) {
+        throw new ApiError(404, "User not found")
     }
 
 
     //only the owner can delete the tweet
-    if (tweet?.owner.equals(user)) {
+    if (tweet?.owner.equals(user._id.toString())) {
         await Tweet.findByIdAndDelete(tweetId)
         return(
             res
