@@ -4,7 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { User } from "../models/user.model.js";
-
+import mongoose from "mongoose";
 
 const publishVideo=asyncHandler(async(req,res)=>{
     /*
@@ -74,13 +74,17 @@ const publishVideo=asyncHandler(async(req,res)=>{
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+    const { page = 1, limit = 10, query, sortBy, sortType} = req.query;
+
+    const user = await User.find({
+        refreshToken: req.cookies.refreshToken,
+    });
 
     const pageNumber = parseInt(page);
     const limitOfComments = parseInt(limit);
 
-    if (!userId) {
-        throw new ApiError(400, "User Id is required.");
+    if (!user) {
+        throw new ApiError(400, "User is required.");
     }
 
     const skip = (pageNumber - 1) * limitOfComments;
@@ -95,7 +99,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
                         { description: { $regex: query, $options: 'i' } }
                     ],
                     isPublished: true,
-                    owner: mongoose.Types.ObjectId(userId)
+                    owner: user._id
                 }
             },
             {
@@ -169,68 +173,56 @@ const getVideoById=asyncHandler(async(req,res)=>{
 
 const updateVideoDetails = asyncHandler(async (req, res) => {
     const { videoId } = req.params
-    if(!videoId){
-        throw new ApiError(400,"videoId cant be fetched from params")
+    if (!videoId) {
+        throw new ApiError(400, "videoId cant be fetched from params")
     }
 
-    //only the owner can update the video details
+    // Only the owner can update the video details
     const video = await Video.findById(videoId)
-
-    if(!video){
-        throw new ApiError(400,"Cant find video")
+    if (!video) {
+        throw new ApiError(404, "Video not found")
     }
 
-    const user= await User.findById(req.user?._id)
-    if(!user){
-        throw new ApiError(400,"Cant find User")
+    const user = await User.findOne({
+        refreshToken: req.cookies.refreshToken,
+    })
+    if (!user) {
+        throw new ApiError(404, "User not found")
     }
 
-
-    if (video?.owner.equals(user)) {
-        
-        //updating title and description
-        const {title,description}=req.body
-        if (!title) {
-            throw new ApiError(400, "Title is required");
-        }
-        
-        if (!description) {
-            throw new ApiError(400, "Description is required");
-        }
-    
-        video.title=title
-        video.description=description
-        
-    
-    
-        //updating thumbnail
-        const newThumbnailLocalFilePath=req.file?.path
-        if(!newThumbnailLocalFilePath){
-            throw new ApiError(400,"Thumbnail is not uploaded")
-        }
-    
-        const thumbnail=await uploadOnCloudinary(newThumbnailLocalFilePath)
-    
-        if(!thumbnail){
-            throw new ApiError(400,"new Thumbnail not uploaded on cloudinary")
-        }
-    
-        video.thumbnail=thumbnail.url
-        
-        //saving the changes
-        await video.save()
-    
-        //returning the response
-        return(
-            res
-            .status(200)
-            .json(new ApiResponse(200,video,"video details updated successfully"))
-        )
-    }
-    else{
-        throw new ApiError(400,"Only the owner can update video details")
+    if (!video.owner.equals(user._id.toString())) {
+        throw new ApiError(403, "Only the owner can update video details")
     }
 
+    // Update title and description
+    const { title, description } = req.body
+    if (!title) {
+        throw new ApiError(400, "Title is required")
+    }
+    if (!description) {
+        throw new ApiError(400, "Description is required")
+    }
+    video.title = title
+    video.description = description
+
+    // Update thumbnail
+    const newThumbnailLocalFilePath = req.file?.path
+    if (!newThumbnailLocalFilePath) {
+        throw new ApiError(400, "Thumbnail is not uploaded")
+    }
+    const thumbnail = await uploadOnCloudinary(newThumbnailLocalFilePath)
+    if (!thumbnail) {
+        throw new ApiError(500, "Failed to upload thumbnail to Cloudinary")
+    }
+    video.thumbnail = thumbnail.url
+
+    // Save the changes
+    await video.save();
+
+    // Return the response
+    return res
+    .status(200)
+    .json(new ApiResponse(200, video, "Video details updated successfully"))
 })
 
 
@@ -241,11 +233,16 @@ const deleteVideo = asyncHandler(async (req, res) => {
     }
     
     const video = await Video.findById(videoId)
-    const user= await User.findById(req.user?._id)
+    const user = await User.findOne({
+        refreshToken: req.cookies.refreshToken,
+    })
+    if (!user) {
+        throw new ApiError(404, "User not found")
+    }
 
 
     //only the owner can delete the video
-    if (video?.owner.equals(user)) {
+    if (video?.owner.equals(user._id.toString())) {
         await Video.findByIdAndDelete(videoId)
         return(
             res
@@ -277,7 +274,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     return(
         res
         .status(200)
-        .json(200,video.isPublished,"Video publish toggled successfully")
+        .json(new ApiResponse(200,video.isPublished,"Video publish toggled successfully"))
     )
 })
 
