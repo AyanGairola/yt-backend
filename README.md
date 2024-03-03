@@ -168,7 +168,7 @@ Start the server
 
 [multer](https://www.npmjs.com/package/multer)
 
-[jtw](https://www.npmjs.com/package/jsonwebtoken)
+[jason web tokens](https://www.npmjs.com/package/jsonwebtoken)
 
 [cloudinary](https://cloudinary.com/documentation/node_integration)
 
