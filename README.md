@@ -26,25 +26,50 @@ I also learned how to maintain industry standard code which is readable and also
 
 ### For Users
 
-- `/api/v1/users`  
-  -`/register`- POST - Registers an user -`/login`- POST - Logs in an user -`/logout`- POST - Logs out an user -`/change-password`- POST - Changes the password for the user -`/refresh-token`- POST - Generates new refresh token for the user
+- `/api/v1/users`
 
-  -`/current-user`- GET - Gets the current user -`/watch-history`- GET - Gets the watch history of current user -`/channel/:username`- GET - Returns user channel profile
+  -`/register`- POST - Registers an user
 
-  -`/avatar`- PATCH - Updates the avatar of the user -`/cover-image`- PATCH - Updates the cover image of the user -`/update-account-details`- PATCH - Updates the account details of the user
+  -`/login`- POST - Logs in an user
+
+  -`/logout`- POST - Logs out an user
+
+  -`/change-password`- POST - Changes the password for the user
+
+  -`/refresh-token`- POST - Generates new refresh token for the user
+
+  -`/current-user`- GET - Gets the current user
+
+  -`/watch-history`- GET - Gets the watch history of current user
+
+  -`/channel/:username`- GET - Returns user channel profile
+
+  -`/avatar`- PATCH - Updates the avatar of the user
+
+  -`/cover-image`- PATCH - Updates the cover image of the user
+
+  -`/update-account-details`- PATCH - Updates the account details of the user
 
 ### For Videos
 
-- `/api/v1/videos`  
-  -`/publish-video`- POST - To upload the video -`/update-video/:videoId`- POST - Update video details(title, description and thumbnail) -`/toggle-publish-status/:videoId`- POST - Toggle the publish status of a video
+- `/api/v1/videos`
 
-  -`/get-all-videos`- GET - To fetch all videos of the user -`/:videoId`- GET - To fetch the video by video ID
+  -`/publish-video`- POST - To upload the video
+
+  -`/update-video/:videoId`- POST - Update video details(title, description and thumbnail)
+
+  -`/toggle-publish-status/:videoId`- POST - Toggle the publish status of a video
+
+  -`/get-all-videos`- GET - To fetch all videos of the user
+
+  -`/:videoId`- GET - To fetch the video by video ID
 
   -`/delete-video/:videoId`- DELETE - To delete the video
 
 ### For Tweets
 
-- `/api/v1/tweets`  
+- `/api/v1/tweets`
+
   -`/`- POST - To create a tweet
 
   -`/user/:userId`- GET - To get user tweets
@@ -55,7 +80,8 @@ I also learned how to maintain industry standard code which is readable and also
 
 ### For Playlist
 
-- `/api/v1/playlist`  
+- `/api/v1/playlist`
+
   -`/:playlistId` - GET - To fetch the playlist
   -PATCH - To update the playlist
   -DELETE - To delete the playlist
@@ -68,7 +94,8 @@ I also learned how to maintain industry standard code which is readable and also
 
 ### For Comments
 
-- `/api/v1/comments`  
+- `/api/v1/comments`
+
   -`/:videoId` - GET - To get video comments
   -POST - To comment onto a video
 
@@ -76,7 +103,8 @@ I also learned how to maintain industry standard code which is readable and also
 
 ### For Likes
 
-- `/api/v1/likes`  
+- `/api/v1/likes`
+
   -`/toggle/v/:videoId`- POST - To toggle video like
 
   -`/toggle/c/:commentId`- POST - To toggle comment like
@@ -87,7 +115,8 @@ I also learned how to maintain industry standard code which is readable and also
 
 ### For Subscription
 
-- `/api/v1/subscriptions`  
+- `/api/v1/subscriptions`
+
   -`/c/:channelId` - GET - To get Channel Subscribers
   -POST - To toggle subscription on the channel
 
@@ -103,7 +132,8 @@ I also learned how to maintain industry standard code which is readable and also
 
 ### For Health Check
 
-- `/api/v1/healthcheck`  
+- `/api/v1/healthcheck`
+
   -`/`- GET - Return OK Status
 
 ## Run Locally
