@@ -17,9 +17,11 @@ const toggleSubscription = asyncHandler(async (req, res) => {
         throw new ApiError(404,"Channel does not exist")
     }
 
-    const user=await User.findById(req.body?._id) //subscriber
-    if(!user){
-        throw new ApiError(400, "Cannot find the subscriber")
+    const user = await User.findOne({
+        refreshToken: req.cookies.refreshToken,
+    })
+    if (!user) {
+        throw new ApiError(404, "Subscriber not found")
     }
 
 
